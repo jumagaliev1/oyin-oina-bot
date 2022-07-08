@@ -49,6 +49,7 @@ func (b *Bot) handleMessage(message *tgbotapi.Message, updates *tgbotapi.Updates
 	case "3":
 		b.questions(highLvl, message)
 	default:
+
 		msg := tgbotapi.NewMessage(message.Chat.ID, "Invalid level!!!")
 		b.bot.Send(msg)
 	}
@@ -62,25 +63,30 @@ func (b *Bot) questions(lvl int, message *tgbotapi.Message) {
 		y := rand.Intn(lvl)
 		q := tgbotapi.NewMessage(message.Chat.ID, fmt.Sprintf("%d + %d", x, y))
 		b.bot.Send(q)
-		u := tgbotapi.NewUpdate(0)
-		u.Timeout = 60
-		updates, _ := b.bot.GetUpdatesChan(u)
-	loop:
-		for update := range updates { //wait answer
-			answerCh := make(chan string)
-			go func() {
-				var answer string
-				answer = update.Message.Text
-				answerCh <- answer
-			}()
-			select {
-			case answer := <-answerCh:
-				if answer == strconv.Itoa(x+y) {
-					correct++
-				}
-				break loop
-			}
-		}
+
+		//u := tgbotapi.NewUpdate(0)
+		//u.Timeout = 60
+		//	updates, err := b.bot.GetUpdatesChan(u)
+		//	if err != nil {
+		//		log.Fatalln(err)
+		//	}
+		//
+		//loop:
+		//	for update := range updates { //wait answer
+		//		answerCh := make(chan string)
+		//		go func() {
+		//			var answer string
+		//			answer = update.Message.Text
+		//			answerCh <- answer
+		//		}()
+		//		select {
+		//		case answer := <-answerCh:
+		//			if answer == strconv.Itoa(x+y) {
+		//				correct++
+		//			}
+		//			break loop
+		//		}
+		//	}
 	}
 
 	msg := tgbotapi.NewMessage(message.Chat.ID, "You score: "+strconv.Itoa(correct)+" out of 10")
