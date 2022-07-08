@@ -40,14 +40,14 @@ func (b *Bot) handleUnknownCommand(message *tgbotapi.Message) error {
 	return err
 }
 
-func (b *Bot) handleMessage(message *tgbotapi.Message, updates *tgbotapi.UpdatesChannel) {
+func (b *Bot) handleMessage(message *tgbotapi.Message, updates tgbotapi.UpdatesChannel) {
 	switch message.Text {
 	case "1":
-		b.questions(lowLvl, message)
+		b.questions(lowLvl, message, updates)
 	case "2":
-		b.questions(midLvl, message)
+		b.questions(midLvl, message, updates)
 	case "3":
-		b.questions(highLvl, message)
+		b.questions(highLvl, message, updates)
 	default:
 
 		msg := tgbotapi.NewMessage(message.Chat.ID, "Invalid level!!!")
@@ -56,37 +56,29 @@ func (b *Bot) handleMessage(message *tgbotapi.Message, updates *tgbotapi.Updates
 
 }
 
-func (b *Bot) questions(lvl int, message *tgbotapi.Message) {
+func (b *Bot) questions(lvl int, message *tgbotapi.Message, updates tgbotapi.UpdatesChannel) {
 	correct := 0
 	for i := 0; i < 10; i++ {
 		x := rand.Intn(lvl)
 		y := rand.Intn(lvl)
 		q := tgbotapi.NewMessage(message.Chat.ID, fmt.Sprintf("%d + %d", x, y))
 		b.bot.Send(q)
-
-		//u := tgbotapi.NewUpdate(0)
-		//u.Timeout = 60
-		//	updates, err := b.bot.GetUpdatesChan(u)
-		//	if err != nil {
-		//		log.Fatalln(err)
-		//	}
-		//
-		//loop:
-		//	for update := range updates { //wait answer
-		//		answerCh := make(chan string)
-		//		go func() {
-		//			var answer string
-		//			answer = update.Message.Text
-		//			answerCh <- answer
-		//		}()
-		//		select {
-		//		case answer := <-answerCh:
-		//			if answer == strconv.Itoa(x+y) {
-		//				correct++
-		//			}
-		//			break loop
-		//		}
-		//	}
+	loop:
+		for updateQ := range updates { //wait answer
+			answerCh := make(chan string)
+			go func() {
+				var answer string
+				answer = updateQ.Message.Text
+				answerCh <- answer
+			}()
+			select {
+			case answer := <-answerCh:
+				if answer == strconv.Itoa(x+y) {
+					correct++
+				}
+				break loop
+			}
+		}
 	}
 
 	msg := tgbotapi.NewMessage(message.Chat.ID, "You score: "+strconv.Itoa(correct)+" out of 10")
