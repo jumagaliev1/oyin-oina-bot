@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/jumagaliev1/telegrambot/internal/config"
 	"log"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
@@ -8,7 +9,8 @@ import (
 )
 
 func main() {
-	bot, err := tgbotapi.NewBotAPI("5589607135:AAG7osV5IEz-VFdBkHE3BtCfmOpquX4yp8I")
+	cfg := config.GetConfig()
+	bot, err := tgbotapi.NewBotAPI(cfg.Bot.Token)
 	if err != nil {
 		log.Panic(err)
 	}
